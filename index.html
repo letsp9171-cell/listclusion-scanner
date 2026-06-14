@@ -119,6 +119,14 @@ h1 strong{font-weight:700;color:var(--gold);}
 .toast.show{opacity:1;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
+/* KEY TEST STATUS */
+.key-test-row{display:flex;align-items:center;gap:10px;margin-top:8px;}
+.key-test-status{font-size:11px;line-height:1.5;flex:1;}
+.key-test-status.ok{color:var(--success);}
+.key-test-status.fail{color:var(--danger);}
+.key-test-status.checking{color:var(--gold);}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
+
 @media(max-width:640px){
   #pc{flex-direction:column;}
   .pc-sidebar{width:100%;border-right:none;border-bottom:0.5px solid var(--border);padding:1rem;flex-direction:row;align-items:center;gap:1rem;}
@@ -155,6 +163,10 @@ h1 strong{font-weight:700;color:var(--gold);}
     <div class="key-row">
       <input type="password" id="apiKeyInput" placeholder="Paste your key here (AIza...)" autocomplete="off"/>
       <button class="eye-btn" onclick="toggleKey()">👁</button>
+    </div>
+    <div class="key-test-row">
+      <button class="btn btn-outline btn-sm" onclick="testApiKey()" id="testKeyBtn" type="button">Test key</button>
+      <div class="key-test-status" id="keyTestStatus"></div>
     </div>
     <div class="key-hint">Saved only on your device. Get it free at aistudio.google.com</div>
   </div>
@@ -229,6 +241,8 @@ h1 strong{font-weight:700;color:var(--gold);}
 <script>
 const CATS = ["Architects Consultants","Electrical Consultants","Engineering Consultants","MEP Consultant","Mechanical Consultants","Plumbing Consultants","Project Managers","Quantity Surveyours Consultants","Builders & Developers","Civil Contractors","Furniture Manufacturers","Interior Contractors","Metal Works","System Integrators","Aluminium Works","Hvac Contractor","Interior Decorator","Aluminum","Art Works","Chairs","Decors","Furniture","Glass","HVAC Material","Hardware","Home Furniture","Hotel & Hospital Furniture","Kitchen","Marbles","Office Furniture","Out Door Furniture","PAINTS","Raw Wood","Tiles","Wood Working Machinery","Cctv","Coiling","Electrical Material","Machine Tool","Plumbing Material","Water Proofing"];
 
+const GEMINI_MODEL = 'gemini-2.0-flash';
+
 let currentMode = 'phone';
 let roomCode = '';
 let pollInterval = null;
@@ -248,6 +262,54 @@ function saveKey(k) {
   try { localStorage.setItem('gemini_key', k); } catch(e){}
 }
 loadSavedKey();
+
+// ── TEST KEY ──
+async function testApiKey() {
+  const inp = document.getElementById('apiKeyInput');
+  const statusEl = document.getElementById('keyTestStatus');
+  const btn = document.getElementById('testKeyBtn');
+  const key = inp.value.trim();
+
+  if (!key) {
+    statusEl.className = 'key-test-status fail';
+    statusEl.textContent = 'Enter a key first.';
+    return;
+  }
+
+  statusEl.className = 'key-test-status checking';
+  statusEl.innerHTML = '<span class="spinner"></span>Checking key…';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: 'Reply with the single word OK.' }] }],
+        generationConfig: { temperature: 0, maxOutputTokens: 10 }
+      })
+    });
+
+    const data = await resp.json();
+
+    if (data.error) {
+      statusEl.className = 'key-test-status fail';
+      statusEl.textContent = `✗ Key rejected: ${data.error.message || ('HTTP ' + resp.status)}`;
+    } else if (data.candidates && data.candidates.length) {
+      statusEl.className = 'key-test-status ok';
+      statusEl.textContent = `✓ Key works (model: ${GEMINI_MODEL})`;
+      saveKey(key);
+    } else {
+      statusEl.className = 'key-test-status fail';
+      statusEl.textContent = `✗ Unexpected response: ${JSON.stringify(data).slice(0,200)}`;
+    }
+  } catch(err) {
+    statusEl.className = 'key-test-status fail';
+    statusEl.textContent = `✗ Network/request error: ${err.message}`;
+  } finally {
+    btn.disabled = false;
+  }
+}
 
 // ── STORAGE (persistent log) ──
 async function loadLog() {
@@ -351,7 +413,7 @@ Return ONLY a valid JSON array, no markdown, no extra text:
 For categories pick only from this list: ${CATS.join(', ')}.
 Leave any field empty string if not found. Return every company on the page.`;
 
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -364,10 +426,33 @@ Leave any field empty string if not found. Return every company on the page.`;
     });
 
     const data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
-    const text = data.candidates[0].content.parts[0].text;
+
+    if (data.error) {
+      throw new Error(`Gemini API error (HTTP ${resp.status}): ${data.error.message || 'Unknown error'}`);
+    }
+
+    if (!data.candidates || !data.candidates.length) {
+      throw new Error(`No response from Gemini. Raw response: ${JSON.stringify(data).slice(0,300)}`);
+    }
+
+    const candidate = data.candidates[0];
+    if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+      throw new Error(`Gemini stopped early (reason: ${candidate.finishReason}). Try a clearer photo or simpler page.`);
+    }
+
+    const text = candidate.content.parts[0].text;
     const clean = text.replace(/```json|```/g,'').trim();
-    const companies = JSON.parse(clean);
+
+    let companies;
+    try {
+      companies = JSON.parse(clean);
+    } catch(parseErr) {
+      throw new Error(`Gemini returned text that wasn't valid JSON: ${clean.slice(0,300)}`);
+    }
+
+    if (!Array.isArray(companies) || companies.length === 0) {
+      throw new Error(`Gemini found no companies on this page. Raw reply: ${clean.slice(0,300)}`);
+    }
 
     document.getElementById('scanLoading').style.display = 'none';
     document.getElementById('scanResult').style.display = 'block';
@@ -398,9 +483,8 @@ Leave any field empty string if not found. Return every company on the page.`;
   } catch(err) {
     document.getElementById('scanLoading').style.display = 'none';
     document.getElementById('scanIdle').style.display = 'block';
-    const msg = err.message && err.message.includes('API_KEY') ? 'Invalid API key. Check your key and try again.' : 'Could not read page. Try a clearer photo or better lighting.';
-    document.getElementById('phoneStatus').innerHTML = `<span style="color:var(--danger);font-size:13px;">${msg}</span>`;
-    setTimeout(() => { document.getElementById('phoneStatus').innerHTML = ''; }, 4000);
+    document.getElementById('phoneStatus').innerHTML = `<div style="color:var(--danger);font-size:12px;text-align:left;background:rgba(224,92,92,0.08);border:0.5px solid rgba(224,92,92,0.25);border-radius:8px;padding:10px;line-height:1.5;word-break:break-word;">${esc(err.message)}</div>`;
+    setTimeout(() => { document.getElementById('phoneStatus').innerHTML = ''; }, 8000);
   }
 }
 
@@ -445,7 +529,7 @@ async function sendEmail(idx, company) {
   statusEl.textContent = '⏳ Writing email…';
 
   try {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -463,7 +547,16 @@ Write ONLY the email body (no subject line). Under 120 words. Warm and professio
         generationConfig: { temperature: 0.4, maxOutputTokens: 400 }
       })
     });
+
     const data = await resp.json();
+
+    if (data.error) {
+      throw new Error(`Gemini API error (HTTP ${resp.status}): ${data.error.message || 'Unknown error'}`);
+    }
+    if (!data.candidates || !data.candidates.length) {
+      throw new Error(`No response from Gemini. Raw response: ${JSON.stringify(data).slice(0,300)}`);
+    }
+
     const emailBody = data.candidates[0].content.parts[0].text;
 
     const subject = encodeURIComponent(`We'd like to feature ${company.companyName} on Listclusion`);
@@ -479,7 +572,7 @@ Write ONLY the email body (no subject line). Under 120 words. Warm and professio
 
   } catch(err) {
     statusEl.className = 'email-status error';
-    statusEl.textContent = '✗ Something went wrong. Try again.';
+    statusEl.textContent = `✗ ${err.message}`;
   }
 }
 
