@@ -159,16 +159,16 @@ h1 strong{font-weight:700;color:var(--gold);}
   </div>
 
   <div class="input-block">
-    <label>Your Gemini API Key</label>
+    <label>Your Groq API Key</label>
     <div class="key-row">
-      <input type="password" id="apiKeyInput" placeholder="Paste your key here (AIza...)" autocomplete="off"/>
+      <input type="password" id="apiKeyInput" placeholder="Paste your key here (gsk_...)" autocomplete="off"/>
       <button class="eye-btn" onclick="toggleKey()">👁</button>
     </div>
     <div class="key-test-row">
       <button class="btn btn-outline btn-sm" onclick="testApiKey()" id="testKeyBtn" type="button">Test key</button>
       <div class="key-test-status" id="keyTestStatus"></div>
     </div>
-    <div class="key-hint">Saved only on your device. Get it free at aistudio.google.com</div>
+    <div class="key-hint">Saved only on your device. Get it free at console.groq.com (sign up, then "API Keys" → "Create API Key")</div>
   </div>
 
   <div class="input-block">
@@ -241,13 +241,14 @@ h1 strong{font-weight:700;color:var(--gold);}
 <script>
 const CATS = ["Architects Consultants","Electrical Consultants","Engineering Consultants","MEP Consultant","Mechanical Consultants","Plumbing Consultants","Project Managers","Quantity Surveyours Consultants","Builders & Developers","Civil Contractors","Furniture Manufacturers","Interior Contractors","Metal Works","System Integrators","Aluminium Works","Hvac Contractor","Interior Decorator","Aluminum","Art Works","Chairs","Decors","Furniture","Glass","HVAC Material","Hardware","Home Furniture","Hotel & Hospital Furniture","Kitchen","Marbles","Office Furniture","Out Door Furniture","PAINTS","Raw Wood","Tiles","Wood Working Machinery","Cctv","Coiling","Electrical Material","Machine Tool","Plumbing Material","Water Proofing"];
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GROQ_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
+const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
 let currentMode = 'phone';
 let roomCode = '';
 let pollInterval = null;
 let lastSeenTimestamp = 0;
-let geminiKey = '';
+let apiKey = '';
 
 // ── KEY HANDLING ──
 function toggleKey() {
@@ -256,10 +257,10 @@ function toggleKey() {
 }
 
 function loadSavedKey() {
-  try { const k = localStorage.getItem('gemini_key'); if(k) document.getElementById('apiKeyInput').value = k; } catch(e){}
+  try { const k = localStorage.getItem('groq_key'); if(k) document.getElementById('apiKeyInput').value = k; } catch(e){}
 }
 function saveKey(k) {
-  try { localStorage.setItem('gemini_key', k); } catch(e){}
+  try { localStorage.setItem('groq_key', k); } catch(e){}
 }
 loadSavedKey();
 
@@ -281,12 +282,17 @@ async function testApiKey() {
   btn.disabled = true;
 
   try {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`, {
+    const resp = await fetch(GROQ_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: 'Reply with the single word OK.' }] }],
-        generationConfig: { temperature: 0, maxOutputTokens: 10 }
+        model: GROQ_MODEL,
+        messages: [{ role: 'user', content: 'Reply with the single word OK.' }],
+        temperature: 0,
+        max_tokens: 10
       })
     });
 
@@ -295,9 +301,9 @@ async function testApiKey() {
     if (data.error) {
       statusEl.className = 'key-test-status fail';
       statusEl.textContent = `✗ Key rejected: ${data.error.message || ('HTTP ' + resp.status)}`;
-    } else if (data.candidates && data.candidates.length) {
+    } else if (data.choices && data.choices.length) {
       statusEl.className = 'key-test-status ok';
-      statusEl.textContent = `✓ Key works (model: ${GEMINI_MODEL})`;
+      statusEl.textContent = `✓ Key works (model: ${GROQ_MODEL})`;
       saveKey(key);
     } else {
       statusEl.className = 'key-test-status fail';
@@ -357,9 +363,9 @@ function makeRoom() { document.getElementById('roomInput').value = Math.floor(10
 function enterRoom() {
   const key = document.getElementById('apiKeyInput').value.trim();
   const code = document.getElementById('roomInput').value.trim();
-  if (!key) { showToast('Please enter your Gemini API key'); return; }
+  if (!key) { showToast('Please enter your Groq API key'); return; }
   if (!code) { showToast('Please enter a room code'); return; }
-  geminiKey = key;
+  apiKey = key;
   saveKey(key);
   roomCode = code;
   if (currentMode === 'phone') {
@@ -387,22 +393,52 @@ function startCamera() {
   inp.onchange = handleCameraPhoto;
   inp.click();
 }
+
+// Resize/compress the photo so the base64 payload stays well under the
+// 4MB limit the vision API enforces. Returns a base64 string (no prefix).
+function compressImage(file, maxDim = 1600, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (ev) => { img.src = ev.target.result; };
+    reader.onerror = reject;
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) { height = Math.round(height * (maxDim / width)); width = maxDim; }
+        else { width = Math.round(width * (maxDim / height)); height = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      resolve(dataUrl.split(',')[1]);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 async function handleCameraPhoto(e) {
   const file = e.target.files[0];
   if (!file) return;
   e.target.value = '';
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    const b64 = ev.target.result.split(',')[1];
-    document.getElementById('scanIdle').style.display = 'none';
-    document.getElementById('scanResult').style.display = 'none';
-    document.getElementById('scanLoading').style.display = 'block';
+  document.getElementById('scanIdle').style.display = 'none';
+  document.getElementById('scanResult').style.display = 'none';
+  document.getElementById('scanLoading').style.display = 'block';
+  try {
+    const b64 = await compressImage(file);
     await extractAndSync(b64);
-  };
-  reader.readAsDataURL(file);
+  } catch(err) {
+    document.getElementById('scanLoading').style.display = 'none';
+    document.getElementById('scanIdle').style.display = 'block';
+    document.getElementById('phoneStatus').innerHTML = `<div style="color:var(--danger);font-size:12px;text-align:left;background:rgba(224,92,92,0.08);border:0.5px solid rgba(224,92,92,0.25);border-radius:8px;padding:10px;line-height:1.5;">Could not process photo: ${esc(err.message)}</div>`;
+    setTimeout(() => { document.getElementById('phoneStatus').innerHTML = ''; }, 8000);
+  }
 }
 
-// ── GEMINI EXTRACTION ──
+// ── GROQ EXTRACTION ──
 async function extractAndSync(b64) {
   try {
     const prompt = `You are extracting company registration data from a trade fair catalogue page photo. The page may contain 1 to 3 companies. Extract ALL companies found.
@@ -413,45 +449,53 @@ Return ONLY a valid JSON array, no markdown, no extra text:
 For categories pick only from this list: ${CATS.join(', ')}.
 Leave any field empty string if not found. Return every company on the page.`;
 
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`, {
+    const resp = await fetch(GROQ_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
       body: JSON.stringify({
-        contents: [{ parts: [
-          { inline_data: { mime_type: 'image/jpeg', data: b64 } },
-          { text: prompt }
-        ]}],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 2000 }
+        model: GROQ_MODEL,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${b64}` } }
+          ]
+        }],
+        temperature: 0.1,
+        max_tokens: 2000
       })
     });
 
     const data = await resp.json();
 
     if (data.error) {
-      throw new Error(`Gemini API error (HTTP ${resp.status}): ${data.error.message || 'Unknown error'}`);
+      throw new Error(`Groq API error (HTTP ${resp.status}): ${data.error.message || 'Unknown error'}`);
     }
 
-    if (!data.candidates || !data.candidates.length) {
-      throw new Error(`No response from Gemini. Raw response: ${JSON.stringify(data).slice(0,300)}`);
+    if (!data.choices || !data.choices.length) {
+      throw new Error(`No response from Groq. Raw response: ${JSON.stringify(data).slice(0,300)}`);
     }
 
-    const candidate = data.candidates[0];
-    if (candidate.finishReason && candidate.finishReason !== 'STOP') {
-      throw new Error(`Gemini stopped early (reason: ${candidate.finishReason}). Try a clearer photo or simpler page.`);
+    const choice = data.choices[0];
+    if (choice.finish_reason && choice.finish_reason !== 'stop') {
+      throw new Error(`Groq stopped early (reason: ${choice.finish_reason}). Try a clearer photo or simpler page.`);
     }
 
-    const text = candidate.content.parts[0].text;
+    const text = choice.message.content;
     const clean = text.replace(/```json|```/g,'').trim();
 
     let companies;
     try {
       companies = JSON.parse(clean);
     } catch(parseErr) {
-      throw new Error(`Gemini returned text that wasn't valid JSON: ${clean.slice(0,300)}`);
+      throw new Error(`Groq returned text that wasn't valid JSON: ${clean.slice(0,300)}`);
     }
 
     if (!Array.isArray(companies) || companies.length === 0) {
-      throw new Error(`Gemini found no companies on this page. Raw reply: ${clean.slice(0,300)}`);
+      throw new Error(`Groq found no companies on this page. Raw reply: ${clean.slice(0,300)}`);
     }
 
     document.getElementById('scanLoading').style.display = 'none';
@@ -517,7 +561,7 @@ function renderCompaniesOnPC(companies) {
   showToast(`${companies.length} ${companies.length===1?'company':'companies'} received from phone`);
 }
 
-// ── SEND EMAIL via Gemini then mailto ──
+// ── SEND EMAIL via Groq then mailto ──
 async function sendEmail(idx, company) {
   const statusEl = document.getElementById('emailStatus_'+idx);
   if (!company.email) {
@@ -529,11 +573,15 @@ async function sendEmail(idx, company) {
   statusEl.textContent = '⏳ Writing email…';
 
   try {
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`, {
+    const resp = await fetch(GROQ_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text:
+        model: GROQ_MODEL,
+        messages: [{ role: 'user', content:
 `Write a short professional email to ${company.companyName}${company.contactPerson?' (attention: '+company.contactPerson+')':''}.
 
 We are Listclusion (listclusion.com), a B2B platform for the construction, interior design and furniture industry across the Middle East and beyond.
@@ -543,21 +591,22 @@ We'd like to feature ${company.companyName} on Listclusion and request their e-c
 Their product categories: ${(company.categories||[]).join(', ')||'furniture and office products'}
 Their markets: ${company.majorMarkets||'international'}
 
-Write ONLY the email body (no subject line). Under 120 words. Warm and professional. Ask them to reply with their e-catalogue or email it to info@listclusion.com. Sign off as: The Listclusion Team | www.listclusion.com` }]}],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 400 }
+Write ONLY the email body (no subject line). Under 120 words. Warm and professional. Ask them to reply with their e-catalogue or email it to info@listclusion.com. Sign off as: The Listclusion Team | www.listclusion.com` }],
+        temperature: 0.4,
+        max_tokens: 400
       })
     });
 
     const data = await resp.json();
 
     if (data.error) {
-      throw new Error(`Gemini API error (HTTP ${resp.status}): ${data.error.message || 'Unknown error'}`);
+      throw new Error(`Groq API error (HTTP ${resp.status}): ${data.error.message || 'Unknown error'}`);
     }
-    if (!data.candidates || !data.candidates.length) {
-      throw new Error(`No response from Gemini. Raw response: ${JSON.stringify(data).slice(0,300)}`);
+    if (!data.choices || !data.choices.length) {
+      throw new Error(`No response from Groq. Raw response: ${JSON.stringify(data).slice(0,300)}`);
     }
 
-    const emailBody = data.candidates[0].content.parts[0].text;
+    const emailBody = data.choices[0].message.content;
 
     const subject = encodeURIComponent(`We'd like to feature ${company.companyName} on Listclusion`);
     const body = encodeURIComponent(emailBody);
