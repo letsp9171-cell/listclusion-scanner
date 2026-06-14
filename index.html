@@ -8,7 +8,6 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --gold:#C9A84C;
-  --gold-light:#F0D080;
   --dark:#1A1A1A;
   --surface:#242424;
   --surface2:#2E2E2E;
@@ -21,27 +20,29 @@
   --radius-sm:8px;
 }
 body{background:var(--dark);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden;}
-
-/* ── SCREENS ── */
 .screen{display:none;min-height:100vh;padding:0;}
 .screen.active{display:flex;flex-direction:column;}
 
-/* ── LANDING ── */
-#landing{align-items:center;justify-content:center;padding:2rem;text-align:center;background:var(--dark);}
-.logo{font-size:13px;font-weight:600;letter-spacing:0.18em;color:var(--gold);text-transform:uppercase;margin-bottom:3rem;}
+/* LANDING */
+#landing{align-items:center;justify-content:center;padding:2rem;text-align:center;}
+.logo{font-size:13px;font-weight:600;letter-spacing:0.18em;color:var(--gold);text-transform:uppercase;margin-bottom:2.5rem;}
 .logo span{display:block;width:36px;height:2px;background:var(--gold);margin:8px auto 0;}
 h1{font-size:28px;font-weight:300;line-height:1.3;margin-bottom:0.5rem;letter-spacing:-0.02em;}
 h1 strong{font-weight:700;color:var(--gold);}
-.sub{font-size:14px;color:var(--muted);margin-bottom:3rem;line-height:1.6;}
-.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:400px;margin-bottom:2rem;}
-.mode-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1.25rem 1rem;cursor:pointer;transition:border-color 0.15s,background 0.15s;text-align:left;}
-.mode-card:hover,.mode-card.sel{border-color:var(--gold);background:var(--surface2);}
+.sub{font-size:14px;color:var(--muted);margin-bottom:2rem;line-height:1.6;}
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:400px;margin-bottom:1.5rem;}
+.mode-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1.25rem 1rem;cursor:pointer;transition:border-color 0.15s;text-align:left;}
+.mode-card.sel{border-color:var(--gold);background:var(--surface2);}
 .mode-card .ic{font-size:28px;margin-bottom:0.5rem;}
-.mode-card .mc-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.mode-card .mc-title{font-size:13px;font-weight:600;margin-bottom:2px;}
 .mode-card .mc-sub{font-size:11px;color:var(--muted);line-height:1.4;}
-.room-row{display:flex;gap:8px;width:100%;max-width:400px;margin-bottom:1rem;}
-.room-row input{flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-size:16px;color:var(--text);letter-spacing:0.12em;text-align:center;font-weight:600;}
-.room-row input::placeholder{letter-spacing:0;font-weight:400;font-size:14px;}
+.input-block{width:100%;max-width:400px;margin-bottom:1rem;text-align:left;}
+.input-block label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;}
+.input-block input{width:100%;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 14px;font-size:15px;color:var(--text);font-family:inherit;}
+.input-block input::placeholder{color:var(--muted);font-size:13px;}
+.key-row{display:flex;gap:8px;align-items:center;}
+.key-row input{flex:1;}
+.eye-btn{background:transparent;border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;cursor:pointer;color:var(--muted);font-size:16px;flex-shrink:0;}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;font-size:15px;font-weight:600;border-radius:var(--radius-sm);cursor:pointer;border:none;transition:opacity 0.15s,transform 0.1s;font-family:inherit;}
 .btn:active{transform:scale(0.97);}
 .btn-gold{background:var(--gold);color:#1A1A1A;width:100%;max-width:400px;}
@@ -49,46 +50,43 @@ h1 strong{font-weight:700;color:var(--gold);}
 .btn-outline{background:transparent;border:0.5px solid var(--border);color:var(--text);font-size:13px;padding:10px 18px;}
 .btn-outline:hover{border-color:var(--gold);color:var(--gold);}
 .btn-sm{padding:9px 16px;font-size:13px;border-radius:var(--radius-sm);}
-.divider{width:100%;max-width:400px;display:flex;align-items:center;gap:10px;margin:1rem 0;color:var(--muted);font-size:12px;}
+.divider{width:100%;max-width:400px;display:flex;align-items:center;gap:10px;margin:0.75rem 0;color:var(--muted);font-size:12px;}
 .divider::before,.divider::after{content:'';flex:1;height:0.5px;background:var(--border);}
+.key-hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;}
 
-/* ── PHONE SCAN SCREEN ── */
+/* PHONE */
 #phone{background:var(--dark);}
 .phone-header{padding:1.25rem 1.25rem 0;display:flex;align-items:center;justify-content:space-between;}
-.phone-header .logo-sm{font-size:11px;font-weight:700;letter-spacing:0.15em;color:var(--gold);}
+.logo-sm{font-size:11px;font-weight:700;letter-spacing:0.15em;color:var(--gold);}
 .room-badge{font-size:11px;background:var(--surface2);border:0.5px solid var(--border);border-radius:20px;padding:4px 12px;color:var(--muted);}
 .room-badge span{color:var(--gold);font-weight:700;}
 .scan-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;gap:1.5rem;}
-.scan-btn{width:100px;height:100px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:36px;transition:transform 0.15s,opacity 0.15s;box-shadow:0 0 0 12px rgba(201,168,76,0.12);}
+.scan-btn{width:100px;height:100px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:36px;transition:transform 0.15s;box-shadow:0 0 0 12px rgba(201,168,76,0.12);}
 .scan-btn:active{transform:scale(0.93);}
-.scan-label{font-size:15px;font-weight:500;color:var(--text);}
+.scan-label{font-size:15px;font-weight:500;}
 .scan-hint{font-size:12px;color:var(--muted);text-align:center;line-height:1.6;max-width:240px;}
-#scanResult{width:100%;display:none;}
-.result-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:10px;}
-.result-card .rc-name{font-size:15px;font-weight:600;color:var(--gold);margin-bottom:4px;}
-.result-card .rc-email{font-size:12px;color:var(--muted);}
-.result-card .rc-cats{font-size:11px;color:var(--muted);margin-top:4px;}
+.result-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:10px;width:100%;}
+.rc-name{font-size:15px;font-weight:600;color:var(--gold);margin-bottom:4px;}
+.rc-email{font-size:12px;color:var(--muted);}
+.rc-cats{font-size:11px;color:var(--muted);margin-top:4px;}
 .sending-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:6px;}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
 .dot.sent{background:var(--success);}
 .dot.sending{background:var(--gold);animation:pulse 0.8s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 .phone-footer{padding:1rem 1.5rem 2rem;}
-#phoneStatus{font-size:13px;color:var(--muted);text-align:center;padding:0.5rem;}
 
-/* ── PC SCREEN ── */
+/* PC */
 #pc{flex-direction:row;min-height:100vh;}
 .pc-sidebar{width:260px;flex-shrink:0;background:var(--surface);border-right:0.5px solid var(--border);display:flex;flex-direction:column;padding:1.5rem;}
-.pc-sidebar .logo-sm{font-size:11px;font-weight:700;letter-spacing:0.15em;color:var(--gold);margin-bottom:2rem;}
 .stat-box{background:var(--dark);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;text-align:center;}
 .stat-box .num{font-size:36px;font-weight:700;color:var(--gold);line-height:1;}
 .stat-box .lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;}
 .log-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;}
 .log-list{flex:1;overflow-y:auto;}
 .log-item{padding:8px 0;border-bottom:0.5px solid var(--border);display:flex;align-items:flex-start;gap:8px;}
-.log-item:last-child{border-bottom:none;}
 .log-dot{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;margin-top:5px;}
-.log-item-name{font-size:12px;color:var(--text);line-height:1.4;}
+.log-item-name{font-size:12px;line-height:1.4;}
 .log-item-date{font-size:10px;color:var(--muted);}
 .pc-main{flex:1;display:flex;flex-direction:column;padding:2rem;}
 .pc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
@@ -98,16 +96,14 @@ h1 strong{font-weight:700;color:var(--gold);}
 .waiting{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;color:var(--muted);}
 .waiting .w-icon{font-size:48px;opacity:0.3;animation:bob 2s ease-in-out infinite;}
 @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-.waiting p{font-size:14px;}
 .companies-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
 .co-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1.25rem;position:relative;}
-.co-card .co-num{position:absolute;top:1rem;right:1rem;font-size:10px;font-weight:700;color:var(--gold);background:rgba(201,168,76,0.12);border-radius:20px;padding:2px 10px;text-transform:uppercase;letter-spacing:0.08em;}
-.co-card h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:0.25rem;padding-right:3rem;}
-.co-card .co-email{font-size:12px;color:var(--muted);margin-bottom:1rem;}
+.co-num{position:absolute;top:1rem;right:1rem;font-size:10px;font-weight:700;color:var(--gold);background:rgba(201,168,76,0.12);border-radius:20px;padding:2px 10px;text-transform:uppercase;letter-spacing:0.08em;}
+.co-card h3{font-size:16px;font-weight:700;margin-bottom:0.25rem;padding-right:3rem;}
+.co-email-lbl{font-size:12px;color:var(--muted);margin-bottom:1rem;}
 .field-row{margin-bottom:8px;}
 .field-row label{display:block;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;}
 .field-row input,.field-row textarea{width:100%;background:var(--dark);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-size:13px;color:var(--text);font-family:inherit;resize:none;}
-.field-row textarea{min-height:60px;}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .email-status{margin-top:1rem;padding:0.75rem;border-radius:var(--radius-sm);font-size:12px;display:none;}
 .email-status.sending{display:block;background:rgba(201,168,76,0.1);border:0.5px solid rgba(201,168,76,0.3);color:var(--gold);}
@@ -121,17 +117,13 @@ h1 strong{font-weight:700;color:var(--gold);}
 .cat-tag{font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(201,168,76,0.1);color:var(--gold);border:0.5px solid rgba(201,168,76,0.2);}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 20px;font-size:13px;color:var(--text);z-index:999;opacity:0;transition:opacity 0.2s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
-#videoEl{display:none;}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* ── RESPONSIVE ── */
 @media(max-width:640px){
   #pc{flex-direction:column;}
   .pc-sidebar{width:100%;border-right:none;border-bottom:0.5px solid var(--border);padding:1rem;flex-direction:row;align-items:center;gap:1rem;}
   .stat-box{margin-bottom:0;min-width:80px;}
-  .log-list{display:none;}
-  .log-title{display:none;}
+  .log-list,.log-title{display:none;}
   .pc-main{padding:1rem;}
   .companies-grid{grid-template-columns:1fr;}
 }
@@ -143,7 +135,7 @@ h1 strong{font-weight:700;color:var(--gold);}
 <div class="screen active" id="landing">
   <div class="logo">Listclusion Scanner<span></span></div>
   <h1>Scan. Send.<br/><strong>Done.</strong></h1>
-  <p class="sub">Scan trade fair catalogues on your phone.<br/>Emails send automatically from your PC.</p>
+  <p class="sub">Scan catalogue pages on your phone.<br/>Emails send automatically from your PC.</p>
 
   <div class="mode-cards">
     <div class="mode-card sel" id="modePhone" onclick="selectMode('phone')">
@@ -158,18 +150,24 @@ h1 strong{font-weight:700;color:var(--gold);}
     </div>
   </div>
 
-  <div class="room-row">
-    <input type="text" id="roomInput" placeholder="Room code (e.g. 1234)" maxlength="8" autocomplete="off"/>
+  <div class="input-block">
+    <label>Your Gemini API Key</label>
+    <div class="key-row">
+      <input type="password" id="apiKeyInput" placeholder="Paste your key here (AIza...)" autocomplete="off"/>
+      <button class="eye-btn" onclick="toggleKey()">👁</button>
+    </div>
+    <div class="key-hint">Saved only on your device. Get it free at aistudio.google.com</div>
+  </div>
+
+  <div class="input-block">
+    <label>Room Code</label>
+    <input type="text" id="roomInput" placeholder="e.g. 1234 — same on both devices" maxlength="8" autocomplete="off"/>
   </div>
 
   <button class="btn btn-gold" onclick="enterRoom()">Enter Room →</button>
-
-  <div class="divider" style="margin-top:1.5rem;">or</div>
-  <button class="btn btn-outline" onclick="makeRoom()">Create new room</button>
-
-  <p style="font-size:11px;color:var(--muted);margin-top:1.5rem;max-width:320px;text-align:center;line-height:1.7;">
-    Open this page on both devices. Enter the same room code so they stay in sync.
-  </p>
+  <div class="divider" style="margin-top:1.25rem;">or</div>
+  <button class="btn btn-outline" onclick="makeRoom()">Create new room code</button>
+  <p style="font-size:11px;color:var(--muted);margin-top:1.25rem;max-width:300px;text-align:center;line-height:1.7;">Open this page on both devices. Enter the same room code so they stay in sync.</p>
 </div>
 
 <!-- PHONE SCAN -->
@@ -178,50 +176,39 @@ h1 strong{font-weight:700;color:var(--gold);}
     <div class="logo-sm">LISTCLUSION</div>
     <div class="room-badge">Room <span id="phoneRoomBadge">—</span></div>
   </div>
-
   <div class="scan-area">
-    <div id="scanIdle">
-      <div style="text-align:center;margin-bottom:1.5rem;">
-        <button class="scan-btn" onclick="startCamera()">📷</button>
-      </div>
-      <div class="scan-label" style="text-align:center;margin-bottom:0.5rem;">Scan a page</div>
-      <div class="scan-hint">Point your camera at a catalogue page. The photo won't be saved to your gallery.</div>
+    <div id="scanIdle" style="text-align:center;">
+      <button class="scan-btn" onclick="startCamera()">📷</button>
+      <div class="scan-label" style="margin-top:1.25rem;margin-bottom:0.5rem;">Scan a page</div>
+      <div class="scan-hint">Point at a catalogue page. Photo won't be saved to your gallery.</div>
     </div>
-
     <div id="scanLoading" style="display:none;text-align:center;">
       <div style="font-size:40px;margin-bottom:1rem;">🔍</div>
       <div class="scan-label">Reading the page...</div>
       <div class="scan-hint" style="margin-top:0.5rem;">Finding all companies</div>
     </div>
-
     <div id="scanResult" style="width:100%;display:none;">
       <div id="resultCards"></div>
-      <div id="syncStatus" style="text-align:center;font-size:12px;color:var(--muted);margin:0.5rem 0;">Syncing to PC...</div>
+      <div id="syncStatus" style="text-align:center;font-size:12px;color:var(--muted);margin:0.5rem 0;"></div>
     </div>
   </div>
-
   <div class="phone-footer">
     <div id="phoneStatus"></div>
     <button class="btn btn-outline btn-sm" style="width:100%;margin-top:0.5rem;" onclick="goLanding()">← Switch mode</button>
   </div>
-
-  <video id="videoEl" playsinline autoplay></video>
-  <canvas id="captureCanvas" style="display:none;"></canvas>
   <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none;"/>
 </div>
 
 <!-- PC VIEW -->
 <div class="screen" id="pc">
   <div class="pc-sidebar">
-    <div class="logo-sm">LISTCLUSION SCANNER</div>
+    <div class="logo-sm" style="margin-bottom:1.5rem;">LISTCLUSION SCANNER</div>
     <div class="stat-box">
       <div class="num" id="totalCount">0</div>
       <div class="lbl">Companies done</div>
     </div>
     <div class="log-title">Registered companies</div>
-    <div class="log-list" id="logList">
-      <div style="font-size:12px;color:var(--muted);padding:0.5rem 0;">No companies yet</div>
-    </div>
+    <div class="log-list" id="logList"><div style="font-size:12px;color:var(--muted);padding:0.5rem 0;">No companies yet</div></div>
   </div>
   <div class="pc-main">
     <div class="pc-top">
@@ -240,20 +227,31 @@ h1 strong{font-weight:700;color:var(--gold);}
 <div class="toast" id="toast"></div>
 
 <script>
-// ── STATE ──
 const CATS = ["Architects Consultants","Electrical Consultants","Engineering Consultants","MEP Consultant","Mechanical Consultants","Plumbing Consultants","Project Managers","Quantity Surveyours Consultants","Builders & Developers","Civil Contractors","Furniture Manufacturers","Interior Contractors","Metal Works","System Integrators","Aluminium Works","Hvac Contractor","Interior Decorator","Aluminum","Art Works","Chairs","Decors","Furniture","Glass","HVAC Material","Hardware","Home Furniture","Hotel & Hospital Furniture","Kitchen","Marbles","Office Furniture","Out Door Furniture","PAINTS","Raw Wood","Tiles","Wood Working Machinery","Cctv","Coiling","Electrical Material","Machine Tool","Plumbing Material","Water Proofing"];
 
 let currentMode = 'phone';
 let roomCode = '';
 let pollInterval = null;
 let lastSeenTimestamp = 0;
+let geminiKey = '';
 
-// ── STORAGE (uses artifact persistent storage) ──
+// ── KEY HANDLING ──
+function toggleKey() {
+  const inp = document.getElementById('apiKeyInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function loadSavedKey() {
+  try { const k = localStorage.getItem('gemini_key'); if(k) document.getElementById('apiKeyInput').value = k; } catch(e){}
+}
+function saveKey(k) {
+  try { localStorage.setItem('gemini_key', k); } catch(e){}
+}
+loadSavedKey();
+
+// ── STORAGE (persistent log) ──
 async function loadLog() {
-  try {
-    const r = await window.storage.get('listclusion-log');
-    return r ? JSON.parse(r.value) : [];
-  } catch(e) { return []; }
+  try { const r = await window.storage.get('listclusion-log'); return r ? JSON.parse(r.value) : []; } catch(e) { return []; }
 }
 async function saveLog(log) {
   try { await window.storage.set('listclusion-log', JSON.stringify(log)); } catch(e) {}
@@ -270,49 +268,37 @@ async function renderLog(log) {
   const count = document.getElementById('totalCount');
   if (!el) return;
   count.textContent = log.length;
-  if (log.length === 0) {
-    el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:0.5rem 0;">No companies yet</div>';
-    return;
-  }
-  el.innerHTML = log.map(i => `
-    <div class="log-item">
-      <div class="log-dot"></div>
-      <div>
-        <div class="log-item-name">${esc(i.name)}</div>
-        <div class="log-item-date">${i.date}${i.email ? ' · ' + esc(i.email) : ''}</div>
-      </div>
-    </div>`).join('');
+  if (log.length === 0) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:0.5rem 0;">No companies yet</div>'; return; }
+  el.innerHTML = log.map(i => `<div class="log-item"><div class="log-dot"></div><div><div class="log-item-name">${esc(i.name)}</div><div class="log-item-date">${i.date}${i.email?' · '+esc(i.email):''}</div></div></div>`).join('');
 }
 
-// ── ROOM SYNC via storage ──
+// ── ROOM SYNC ──
 async function publishData(data) {
-  const payload = { data, ts: Date.now() };
-  await window.storage.set('room-' + roomCode, JSON.stringify(payload), true);
+  try { await window.storage.set('room-'+roomCode, JSON.stringify({data,ts:Date.now()}), true); } catch(e){}
 }
 async function pollForData() {
   try {
-    const r = await window.storage.get('room-' + roomCode, true);
+    const r = await window.storage.get('room-'+roomCode, true);
     if (!r) return;
     const payload = JSON.parse(r.value);
-    if (payload.ts > lastSeenTimestamp) {
-      lastSeenTimestamp = payload.ts;
-      renderCompaniesOnPC(payload.data);
-    }
+    if (payload.ts > lastSeenTimestamp) { lastSeenTimestamp = payload.ts; renderCompaniesOnPC(payload.data); }
   } catch(e) {}
 }
 
 // ── LANDING ──
 function selectMode(m) {
   currentMode = m;
-  document.getElementById('modePhone').classList.toggle('sel', m === 'phone');
-  document.getElementById('modePC').classList.toggle('sel', m === 'pc');
+  document.getElementById('modePhone').classList.toggle('sel', m==='phone');
+  document.getElementById('modePC').classList.toggle('sel', m==='pc');
 }
-function makeRoom() {
-  document.getElementById('roomInput').value = Math.floor(1000 + Math.random() * 9000).toString();
-}
+function makeRoom() { document.getElementById('roomInput').value = Math.floor(1000+Math.random()*9000).toString(); }
 function enterRoom() {
+  const key = document.getElementById('apiKeyInput').value.trim();
   const code = document.getElementById('roomInput').value.trim();
-  if (!code) { showToast('Enter a room code first'); return; }
+  if (!key) { showToast('Please enter your Gemini API key'); return; }
+  if (!code) { showToast('Please enter a room code'); return; }
+  geminiKey = key;
+  saveKey(key);
   roomCode = code;
   if (currentMode === 'phone') {
     showScreen('phone');
@@ -333,9 +319,8 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
-// ── CAMERA (no gallery save) ──
+// ── CAMERA ──
 function startCamera() {
-  // Use file input with capture — this uses camera without saving to gallery on most mobile browsers
   const inp = document.getElementById('camInput');
   inp.onchange = handleCameraPhoto;
   inp.click();
@@ -355,57 +340,55 @@ async function handleCameraPhoto(e) {
   reader.readAsDataURL(file);
 }
 
-// ── AI EXTRACTION ──
+// ── GEMINI EXTRACTION ──
 async function extractAndSync(b64) {
   try {
-    const prompt = `You are extracting company registration data from a trade fair catalogue page. The page may contain 1–3 companies. For EACH company found, extract all available details.
+    const prompt = `You are extracting company registration data from a trade fair catalogue page photo. The page may contain 1 to 3 companies. Extract ALL companies found.
 
-Return ONLY a valid JSON array, no markdown, no explanation:
+Return ONLY a valid JSON array, no markdown, no extra text:
 [{"companyName":"","website":"","description":"","address1":"","address2":"","country":"","city":"","phone":"","email":"","contactPerson":"","title":"","categories":[],"majorMarkets":"","businessNature":""}]
 
-For categories pick from: ${CATS.join(', ')}.
-If a field is not found, leave it as empty string. Return ALL companies on the page.`;
+For categories pick only from this list: ${CATS.join(', ')}.
+Leave any field empty string if not found. Return every company on the page.`;
 
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: [
-          { type: "image", source: { type: "base64", media_type: "image/jpeg", data: b64 } },
-          { type: "text", text: prompt }
-        ]}]
+        contents: [{ parts: [
+          { inline_data: { mime_type: 'image/jpeg', data: b64 } },
+          { text: prompt }
+        ]}],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 2000 }
       })
     });
+
     const data = await resp.json();
-    const text = data.content.map(i => i.text || '').join('');
-    const clean = text.replace(/```json|```/g, '').trim();
+    if (data.error) throw new Error(data.error.message);
+    const text = data.candidates[0].content.parts[0].text;
+    const clean = text.replace(/```json|```/g,'').trim();
     const companies = JSON.parse(clean);
 
-    // Show on phone
     document.getElementById('scanLoading').style.display = 'none';
     document.getElementById('scanResult').style.display = 'block';
     const cards = document.getElementById('resultCards');
     cards.innerHTML = companies.map((c,i) => `
       <div class="result-card">
-        <div class="rc-name">${esc(c.companyName || 'Company '+(i+1))}</div>
-        <div class="rc-email">${esc(c.email || 'No email found')}</div>
+        <div class="rc-name">${esc(c.companyName||'Company '+(i+1))}</div>
+        <div class="rc-email">${esc(c.email||'No email found')}</div>
         <div class="rc-cats">${(c.categories||[]).slice(0,3).join(' · ')}</div>
         <div class="sending-row"><div class="dot sending" id="dot_${i}"></div><span id="dotLabel_${i}">Syncing to PC…</span></div>
       </div>`).join('');
 
-    document.getElementById('scanResult').style.display = 'block';
-
-    // Sync to PC
     await publishData(companies);
-    document.querySelectorAll('[id^="dot_"]').forEach((d,i) => {
-      d.className = 'dot sent';
-      document.getElementById('dotLabel_'+i).textContent = 'Sent to PC ✓';
+    companies.forEach((_,i) => {
+      const d = document.getElementById('dot_'+i);
+      if(d) d.className = 'dot sent';
+      const l = document.getElementById('dotLabel_'+i);
+      if(l) l.textContent = 'Sent to PC ✓';
     });
     document.getElementById('syncStatus').textContent = `✓ ${companies.length} ${companies.length===1?'company':'companies'} synced to PC`;
 
-    // Reset scan button after 4s
     setTimeout(() => {
       document.getElementById('scanIdle').style.display = 'block';
       document.getElementById('scanResult').style.display = 'none';
@@ -415,97 +398,84 @@ If a field is not found, leave it as empty string. Return ALL companies on the p
   } catch(err) {
     document.getElementById('scanLoading').style.display = 'none';
     document.getElementById('scanIdle').style.display = 'block';
-    document.getElementById('phoneStatus').innerHTML = '<span style="color:var(--danger)">Could not read page. Try a clearer photo.</span>';
-    setTimeout(() => { document.getElementById('phoneStatus').innerHTML = ''; }, 3000);
+    const msg = err.message && err.message.includes('API_KEY') ? 'Invalid API key. Check your key and try again.' : 'Could not read page. Try a clearer photo or better lighting.';
+    document.getElementById('phoneStatus').innerHTML = `<span style="color:var(--danger);font-size:13px;">${msg}</span>`;
+    setTimeout(() => { document.getElementById('phoneStatus').innerHTML = ''; }, 4000);
   }
 }
 
-// ── PC: RENDER COMPANIES ──
+// ── PC RENDER ──
 function renderCompaniesOnPC(companies) {
   document.getElementById('pcWaiting').style.display = 'none';
   const grid = document.getElementById('companiesGrid');
   grid.style.display = 'grid';
-  grid.innerHTML = companies.map((c, i) => `
+  grid.innerHTML = companies.map((c,i) => `
     <div class="co-card" id="coCard_${i}">
       <div class="co-num">Company ${i+1}</div>
-      <h3>${esc(c.companyName || 'Unknown Company')}</h3>
-      <div class="co-email">${esc(c.email || 'No email')}</div>
+      <h3>${esc(c.companyName||'Unknown Company')}</h3>
+      <div class="co-email-lbl">${esc(c.email||'No email found')}</div>
       <div class="field-row"><label>Phone</label><input id="f_phone_${i}" value="${esc(c.phone)}"/></div>
       <div class="two-col">
         <div class="field-row"><label>Country</label><input id="f_country_${i}" value="${esc(c.country)}"/></div>
         <div class="field-row"><label>City</label><input id="f_city_${i}" value="${esc(c.city)}"/></div>
       </div>
       <div class="field-row"><label>Website</label><input id="f_website_${i}" value="${esc(c.website)}"/></div>
-      <div class="field-row"><label>Contact person</label><input id="f_contact_${i}" value="${esc(c.contactPerson)} ${esc(c.title)}"/></div>
+      <div class="field-row"><label>Contact person</label><input id="f_contact_${i}" value="${esc(c.contactPerson+(c.title?' — '+c.title:''))}"/></div>
       <div class="field-row"><label>Categories</label>
         <div class="cats-row">${(c.categories||[]).map(cat=>`<span class="cat-tag">${esc(cat)}</span>`).join('')}</div>
       </div>
       <div class="email-status" id="emailStatus_${i}"></div>
       <div class="co-actions">
-        <button class="btn btn-green btn-sm" onclick="sendEmail(${i}, ${JSON.stringify(c).replace(/"/g,'&quot;')})">
-          ✉️ Send email &amp; register
-        </button>
+        <button class="btn btn-green btn-sm" onclick="sendEmail(${i},${JSON.stringify(c).replace(/"/g,'&quot;')})">✉️ Send email</button>
         <button class="btn btn-red btn-sm" onclick="skipCompany(${i})">Skip</button>
       </div>
     </div>`).join('');
   showToast(`${companies.length} ${companies.length===1?'company':'companies'} received from phone`);
 }
 
-// ── SEND EMAIL ──
+// ── SEND EMAIL via Gemini then mailto ──
 async function sendEmail(idx, company) {
   const statusEl = document.getElementById('emailStatus_'+idx);
-  statusEl.className = 'email-status sending';
-  statusEl.textContent = '⏳ Generating and sending email…';
-
-  const emailTo = company.email;
-  if (!emailTo) {
+  if (!company.email) {
     statusEl.className = 'email-status error';
     statusEl.textContent = '✗ No email address found for this company';
     return;
   }
+  statusEl.className = 'email-status sending';
+  statusEl.textContent = '⏳ Writing email…';
 
   try {
-    // Generate email body with AI
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: `Write a short professional email to ${company.companyName} (contact: ${company.contactPerson || 'team'}).
+        contents: [{ parts: [{ text:
+`Write a short professional email to ${company.companyName}${company.contactPerson?' (attention: '+company.contactPerson+')':''}.
 
-We are Listclusion (listclusion.com), a B2B platform connecting buyers, project managers and suppliers in the construction, interior design and furniture industry across the Middle East and beyond.
+We are Listclusion (listclusion.com), a B2B platform for the construction, interior design and furniture industry across the Middle East and beyond.
 
-Purpose: We'd like to feature ${company.companyName} on Listclusion. We are reaching out to request their e-catalogue so we can showcase their products to thousands of buyers on our platform.
+We'd like to feature ${company.companyName} on Listclusion and request their e-catalogue to showcase their products to thousands of buyers on our platform.
 
-Their categories: ${(company.categories||[]).join(', ')}
-Their markets: ${company.majorMarkets || 'international'}
+Their product categories: ${(company.categories||[]).join(', ')||'furniture and office products'}
+Their markets: ${company.majorMarkets||'international'}
 
-Write ONLY the email body (no subject line). Keep it under 120 words. Warm, professional tone. End by asking them to reply with their e-catalogue or send it to info@listclusion.com. Sign off as "The Listclusion Team | www.listclusion.com".` }]
+Write ONLY the email body (no subject line). Under 120 words. Warm and professional. Ask them to reply with their e-catalogue or email it to info@listclusion.com. Sign off as: The Listclusion Team | www.listclusion.com` }]}],
+        generationConfig: { temperature: 0.4, maxOutputTokens: 400 }
       })
     });
     const data = await resp.json();
-    const emailBody = data.content.map(i => i.text || '').join('');
+    const emailBody = data.candidates[0].content.parts[0].text;
 
-    // Open mailto — this works without an email server
-    const subject = encodeURIComponent(`Feature your company on Listclusion — ${company.companyName}`);
+    const subject = encodeURIComponent(`We'd like to feature ${company.companyName} on Listclusion`);
     const body = encodeURIComponent(emailBody);
-    const mailtoLink = `mailto:${emailTo}?subject=${subject}&body=${body}`;
-
-    window.open(mailtoLink, '_blank');
+    window.open(`mailto:${company.email}?subject=${subject}&body=${body}`, '_blank');
 
     statusEl.className = 'email-status sent';
-    statusEl.textContent = '✓ Email opened in your mail app — click Send there';
+    statusEl.textContent = '✓ Email opened — press Send in your mail app';
 
-    // Log it
     await addToLog(company.companyName, company.email);
-    showToast(`${company.companyName} registered ✓`);
-
-    // Dim the card
-    setTimeout(() => {
-      const card = document.getElementById('coCard_'+idx);
-      if (card) card.style.opacity = '0.45';
-    }, 800);
+    showToast(`${company.companyName} done ✓`);
+    setTimeout(() => { const card = document.getElementById('coCard_'+idx); if(card) card.style.opacity='0.4'; }, 800);
 
   } catch(err) {
     statusEl.className = 'email-status error';
@@ -515,11 +485,10 @@ Write ONLY the email body (no subject line). Keep it under 120 words. Warm, prof
 
 function skipCompany(idx) {
   const card = document.getElementById('coCard_'+idx);
-  if (card) card.style.opacity = '0.3';
+  if(card) card.style.opacity = '0.3';
   showToast('Skipped');
 }
 
-// ── UTILS ──
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -528,7 +497,6 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// Init
 renderLog();
 </script>
 </body>
