@@ -472,7 +472,8 @@ Return ONLY a valid JSON array, no markdown, no extra text:
 [{"companyName":"","website":"","description":"","address1":"","address2":"","country":"","city":"","phone":"","email":"","contactPerson":"","title":"","categories":[],"majorMarkets":"","businessNature":""}]
 
 For categories pick only from this list: ${CATS.join(', ')}.
-Leave any field empty string if not found. Return every company on the page.`;
+For "description": if the page already shows a company description/profile, use it (lightly cleaned up). If not, write a short 1-2 sentence professional description yourself based on the company name, categories, products, and business nature visible on the page. Only leave description empty if there's truly nothing to base it on.
+Leave any other field empty string if not found. Return every company on the page.`;
 
     const resp = await fetch(GROQ_ENDPOINT, {
       method: 'POST',
