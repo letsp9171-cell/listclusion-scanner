@@ -72,6 +72,7 @@ h1 strong{font-weight:700;color:var(--gold);}
 .sending-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:6px;}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
 .dot.sent{background:var(--success);}
+.dot.fail{background:var(--danger);}
 .dot.sending{background:var(--gold);animation:pulse 0.8s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 .phone-footer{padding:1rem 1.5rem 2rem;}
@@ -238,7 +239,22 @@ h1 strong{font-weight:700;color:var(--gold);}
 
 <div class="toast" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
+
 <script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD_U1gjv3nzpj4CO52iYS5IuIzmN_lPmNw",
+  authDomain: "listclusion-scanner.firebaseapp.com",
+  databaseURL: "https://listclusion-scanner-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "listclusion-scanner",
+  storageBucket: "listclusion-scanner.firebasestorage.app",
+  messagingSenderId: "1096609042530",
+  appId: "1:1096609042530:web:f15df48c41e42494d7013b"
+};
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.database();
+
 const CATS = ["Architects Consultants","Electrical Consultants","Engineering Consultants","MEP Consultant","Mechanical Consultants","Plumbing Consultants","Project Managers","Quantity Surveyours Consultants","Builders & Developers","Civil Contractors","Furniture Manufacturers","Interior Contractors","Metal Works","System Integrators","Aluminium Works","Hvac Contractor","Interior Decorator","Aluminum","Art Works","Chairs","Decors","Furniture","Glass","HVAC Material","Hardware","Home Furniture","Hotel & Hospital Furniture","Kitchen","Marbles","Office Furniture","Out Door Furniture","PAINTS","Raw Wood","Tiles","Wood Working Machinery","Cctv","Coiling","Electrical Material","Machine Tool","Plumbing Material","Water Proofing"];
 
 const GROQ_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
@@ -246,7 +262,7 @@ const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
 let currentMode = 'phone';
 let roomCode = '';
-let pollInterval = null;
+let roomRef = null;
 let lastSeenTimestamp = 0;
 let apiKey = '';
 
@@ -317,12 +333,16 @@ async function testApiKey() {
   }
 }
 
-// ── STORAGE (persistent log) ──
+// ── STORAGE (persistent log, shared via Firebase) ──
 async function loadLog() {
-  try { const r = await window.storage.get('listclusion-log'); return r ? JSON.parse(r.value) : []; } catch(e) { return []; }
+  try {
+    const snap = await db.ref('companyLog').once('value');
+    const val = snap.val();
+    return Array.isArray(val) ? val : [];
+  } catch(e) { return []; }
 }
 async function saveLog(log) {
-  try { await window.storage.set('listclusion-log', JSON.stringify(log)); } catch(e) {}
+  try { await db.ref('companyLog').set(log); } catch(e) {}
 }
 async function addToLog(name, email) {
   const log = await loadLog();
@@ -340,17 +360,21 @@ async function renderLog(log) {
   el.innerHTML = log.map(i => `<div class="log-item"><div class="log-dot"></div><div><div class="log-item-name">${esc(i.name)}</div><div class="log-item-date">${i.date}${i.email?' · '+esc(i.email):''}</div></div></div>`).join('');
 }
 
-// ── ROOM SYNC ──
+// ── ROOM SYNC (Firebase Realtime Database) ──
 async function publishData(data) {
-  try { await window.storage.set('room-'+roomCode, JSON.stringify({data,ts:Date.now()}), true); } catch(e){}
+  await db.ref('rooms/' + roomCode).set({ data, ts: Date.now() });
 }
-async function pollForData() {
-  try {
-    const r = await window.storage.get('room-'+roomCode, true);
-    if (!r) return;
-    const payload = JSON.parse(r.value);
+function startRoomListener() {
+  stopRoomListener();
+  roomRef = db.ref('rooms/' + roomCode);
+  roomRef.on('value', (snapshot) => {
+    const payload = snapshot.val();
+    if (!payload) return;
     if (payload.ts > lastSeenTimestamp) { lastSeenTimestamp = payload.ts; renderCompaniesOnPC(payload.data); }
-  } catch(e) {}
+  });
+}
+function stopRoomListener() {
+  if (roomRef) { roomRef.off(); roomRef = null; }
 }
 
 // ── LANDING ──
@@ -375,11 +399,12 @@ function enterRoom() {
     showScreen('pc');
     document.getElementById('pcRoomBadge').textContent = roomCode;
     renderLog();
-    pollInterval = setInterval(pollForData, 2000);
+    lastSeenTimestamp = 0;
+    startRoomListener();
   }
 }
 function goLanding() {
-  if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+  stopRoomListener();
   showScreen('landing');
 }
 function showScreen(id) {
@@ -509,20 +534,36 @@ Leave any field empty string if not found. Return every company on the page.`;
         <div class="sending-row"><div class="dot sending" id="dot_${i}"></div><span id="dotLabel_${i}">Syncing to PC…</span></div>
       </div>`).join('');
 
-    await publishData(companies);
-    companies.forEach((_,i) => {
-      const d = document.getElementById('dot_'+i);
-      if(d) d.className = 'dot sent';
-      const l = document.getElementById('dotLabel_'+i);
-      if(l) l.textContent = 'Sent to PC ✓';
-    });
-    document.getElementById('syncStatus').textContent = `✓ ${companies.length} ${companies.length===1?'company':'companies'} synced to PC`;
+    try {
+      await publishData(companies);
+      companies.forEach((_,i) => {
+        const d = document.getElementById('dot_'+i);
+        if(d) d.className = 'dot sent';
+        const l = document.getElementById('dotLabel_'+i);
+        if(l) l.textContent = 'Sent to PC ✓';
+      });
+      document.getElementById('syncStatus').textContent = `✓ ${companies.length} ${companies.length===1?'company':'companies'} synced to PC`;
 
-    setTimeout(() => {
-      document.getElementById('scanIdle').style.display = 'block';
-      document.getElementById('scanResult').style.display = 'none';
-      document.getElementById('syncStatus').textContent = '';
-    }, 4000);
+      setTimeout(() => {
+        document.getElementById('scanIdle').style.display = 'block';
+        document.getElementById('scanResult').style.display = 'none';
+        document.getElementById('syncStatus').textContent = '';
+      }, 4000);
+    } catch(syncErr) {
+      companies.forEach((_,i) => {
+        const d = document.getElementById('dot_'+i);
+        if(d) d.className = 'dot fail';
+        const l = document.getElementById('dotLabel_'+i);
+        if(l) l.textContent = 'Sync failed';
+      });
+      document.getElementById('syncStatus').innerHTML = `<span style="color:var(--danger);">✗ Could not sync to PC: ${esc(syncErr.message)}</span>`;
+
+      setTimeout(() => {
+        document.getElementById('scanIdle').style.display = 'block';
+        document.getElementById('scanResult').style.display = 'none';
+        document.getElementById('syncStatus').textContent = '';
+      }, 7000);
+    }
 
   } catch(err) {
     document.getElementById('scanLoading').style.display = 'none';
