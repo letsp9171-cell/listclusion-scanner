@@ -574,7 +574,23 @@ Leave any field empty string if not found. Return every company on the page.`;
 }
 
 // ── PC RENDER ──
+let currentCompanies = [];
+
+function getEditedCompany(idx) {
+  const c = { ...currentCompanies[idx] };
+  const phone = document.getElementById('f_phone_'+idx);
+  const country = document.getElementById('f_country_'+idx);
+  const city = document.getElementById('f_city_'+idx);
+  const website = document.getElementById('f_website_'+idx);
+  if (phone) c.phone = phone.value;
+  if (country) c.country = country.value;
+  if (city) c.city = city.value;
+  if (website) c.website = website.value;
+  return c;
+}
+
 function renderCompaniesOnPC(companies) {
+  currentCompanies = companies;
   document.getElementById('pcWaiting').style.display = 'none';
   const grid = document.getElementById('companiesGrid');
   grid.style.display = 'grid';
@@ -595,15 +611,29 @@ function renderCompaniesOnPC(companies) {
       </div>
       <div class="email-status" id="emailStatus_${i}"></div>
       <div class="co-actions">
-        <button class="btn btn-green btn-sm" onclick="sendEmail(${i},${JSON.stringify(c).replace(/"/g,'&quot;')})">✉️ Send email</button>
+        <button class="btn btn-green btn-sm" onclick="sendEmail(${i})">✉️ Send email</button>
+        <button class="btn btn-outline btn-sm" onclick="fillRegistrationForm(${i})">📝 Fill registration form</button>
         <button class="btn btn-red btn-sm" onclick="skipCompany(${i})">Skip</button>
       </div>
     </div>`).join('');
   showToast(`${companies.length} ${companies.length===1?'company':'companies'} received from phone`);
 }
 
+// ── FILL REGISTRATION FORM (via bookmarklet on listclusion.com) ──
+async function fillRegistrationForm(idx) {
+  const c = getEditedCompany(idx);
+  try {
+    await db.ref('activeCompany').set(c);
+    window.open('https://www.listclusion.com/register-company', '_blank');
+    showToast(`Sent "${c.companyName || 'company'}" — now click the Fill Form bookmarklet on the new tab`);
+  } catch(err) {
+    showToast('Could not send: ' + err.message);
+  }
+}
+
 // ── SEND EMAIL via Groq then mailto ──
-async function sendEmail(idx, company) {
+async function sendEmail(idx) {
+  const company = getEditedCompany(idx);
   const statusEl = document.getElementById('emailStatus_'+idx);
   if (!company.email) {
     statusEl.className = 'email-status error';
