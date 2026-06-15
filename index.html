@@ -583,9 +583,11 @@ function getEditedCompany(idx) {
   const country = document.getElementById('f_country_'+idx);
   const city = document.getElementById('f_city_'+idx);
   const website = document.getElementById('f_website_'+idx);
+  const description = document.getElementById('f_description_'+idx);
   if (phone) c.phone = phone.value;
   if (country) c.country = country.value;
   if (city) c.city = city.value;
+  if (description) c.description = description.value;
   if (website) c.website = website.value;
   return c;
 }
@@ -607,6 +609,7 @@ function renderCompaniesOnPC(companies) {
       </div>
       <div class="field-row"><label>Website</label><input id="f_website_${i}" value="${esc(c.website)}"/></div>
       <div class="field-row"><label>Contact person</label><input id="f_contact_${i}" value="${esc(c.contactPerson+(c.title?' — '+c.title:''))}"/></div>
+      <div class="field-row"><label>Description</label><textarea id="f_description_${i}" rows="3">${esc(c.description)}</textarea></div>
       <div class="field-row"><label>Categories</label>
         <div class="cats-row">${(c.categories||[]).map(cat=>`<span class="cat-tag">${esc(cat)}</span>`).join('')}</div>
       </div>
